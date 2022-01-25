@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31105.61
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{61B5E5BB-6FDE-4024-B7C7-75D614BAA6A8}") = "TShockDisableNPC", "TShockDisableNPC\TShockDisableNPC.csproj", "{8E0A28D5-28A4-499F-AD03-7F9E934AE639}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8E0A28D5-28A4-499F-AD03-7F9E934AE639}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E0A28D5-28A4-499F-AD03-7F9E934AE639}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E0A28D5-28A4-499F-AD03-7F9E934AE639}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E0A28D5-28A4-499F-AD03-7F9E934AE639}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A60AD6EA-A2E1-4A71-85D9-FE41FDB631AB}
+	EndGlobalSection
+EndGlobal
