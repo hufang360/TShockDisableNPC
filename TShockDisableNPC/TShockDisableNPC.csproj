@@ -7,8 +7,8 @@
     <ProjectGuid>{8E0A28D5-28A4-499F-AD03-7F9E934AE639}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>FastDeploy</RootNamespace>
-    <AssemblyName>FastDeploy</AssemblyName>
+    <RootNamespace>DisableNPC</RootNamespace>
+    <AssemblyName>DisableNPC</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -56,6 +56,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TShockDisableNPC.cs" />
+    <Compile Include="Config.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
