@@ -3,6 +3,7 @@
 [插件直接下载地址](https://gitee.com/hufang360/TShockDisableNPC/attach_files/1049368/download/DisableNPC.dll)
 
 配置文件位于 ./tshock/DisableNPC.json，如果对应位置没有配置文件，插件会自动创建，并默认添加大部分NPC和合成站进白名单。
+
 配置示例：
 ```json
 {
@@ -12,7 +13,9 @@
 }
 ```
 
+
 默认配置中的NPC：
+
 
 | NPCID | NPC名称   |
 |-------|---------|
@@ -49,7 +52,9 @@
 
 
 
+
 默认配置中的制作站：
+
 | 物品ID | 物品名称    |
 |------|---------|
 | 398  | 工匠作坊    |
@@ -140,5 +145,6 @@
 
 
 泰拉所有的 NPCID ：[https://terraria.wiki.gg/zh/wiki/NPC_ID](https://terraria.wiki.gg/zh/wiki/NPC_ID)
+
 泰拉所有的 物品ID ：[https://terraria.wiki.gg/zh/wiki/ITEM_ID](https://terraria.wiki.gg/zh/wiki/ITEM_ID)
 
