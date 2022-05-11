@@ -44,19 +44,28 @@
       <HintPath>deps\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="OTAPI">
-      <HintPath>deps\1.4.3.2\OTAPI.dll</HintPath>
+      <HintPath>deps\1.4.3.6\OTAPI.dll</HintPath>
     </Reference>
     <Reference Include="TerrariaServer">
-      <HintPath>deps\1.4.3.2\TerrariaServer.exe</HintPath>
+      <HintPath>deps\1.4.3.6\TerrariaServer.exe</HintPath>
     </Reference>
     <Reference Include="TShockAPI">
-      <HintPath>deps\1.4.3.2\TShockAPI.dll</HintPath>
+      <HintPath>deps\1.4.3.6\TShockAPI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="utils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TShockDisableNPC.cs" />
+    <Compile Include="TileHelper.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="TxtHelper.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="res\config.json" />
+    <None Remove="res\TileFrameData.txt" />
+    <EmbeddedResource Include="res\config.json" />
+    <EmbeddedResource Include="res\TileFrameData.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

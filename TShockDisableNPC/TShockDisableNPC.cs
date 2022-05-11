@@ -1,100 +1,320 @@
-﻿using System;
-using System.Reflection;
+﻿using Microsoft.Xna.Framework;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using Terraria;
+using Terraria.Localization;
 using TerrariaApi.Server;
 using TShockAPI;
-using TShockAPI.Hooks;
-using Terraria.ID;
 
-
-namespace Plugin
+namespace DisableNPC
 {
     [ApiVersion(2, 1)]
-    public class Plugin : TerrariaPlugin
+    public class DisableNPC : TerrariaPlugin
     {
 
         # region Plugin Info
         public override string Name => "禁NPC";
-        public override string Description => "";
+        public override string Description => "禁NPC、物品、放置物";
         public override string Author => "hufang360";
         public override Version Version => Assembly.GetExecutingAssembly().GetName().Version;
         #endregion
 
         private Config _config;
-        private static string saveFilename = Path.Combine(TShock.SavePath, "DisableNPC.json");
+        private static string saveDir = Path.Combine(TShock.SavePath, "DisableNPC");
+        private static string saveFile = Path.Combine(saveDir, "config.json");
 
-        // 更新间隔
-        private int total = 60;
+        private bool hasPlayer = false;
+        private List<string> muteMsgs = new List<string>();
 
-        // 计时器
-        private int count = 60;
+        private int WOFLastTime = 0;
 
-        // private bool[] Deprecated;
 
-        public Plugin(Main game) : base(game)
+        public DisableNPC(Main game) : base(game)
         {
+
         }
 
         public override void Initialize()
         {
-            // Deprecated =  ItemID.Sets.Deprecated;
-            Reload();
+            Commands.ChatCommands.Add(new Command(new List<string>() { "disablenpc" }, DNCommand, "disablenpc", "dn") { HelpText = "禁NPC" });
 
-            GeneralHooks.ReloadEvent += OnReload;
-            ServerApi.Hooks.GameUpdate.Register(this, OnUpdate);
+            if (!Directory.Exists(saveDir)) Directory.CreateDirectory(saveDir);
+
+            Reload();
+            ServerApi.Hooks.NpcSpawn.Register(this, OnNpcSpawn, 1);
+            ServerApi.Hooks.ServerBroadcast.Register(this, OnBroadcast, 1);
+            ServerApi.Hooks.ServerJoin.Register(this, OnServerJoin, 5);
+            GetDataHandlers.PlayerSlot.Register(OnPlayerSlot, HandlerPriority.Highest);
+            GetDataHandlers.PlaceObject.Register(OnPlaceObject, HandlerPriority.Highest);
+            GetDataHandlers.ItemDrop.Register(OnItemDrop);
         }
 
-        private void OnReload(ReloadEventArgs args)
+        private void DNCommand(CommandArgs args)
         {
-            Reload();
+            TSPlayer op = args.Player;
+            if (args.Parameters.Count == 0)
+            {
+                op.SendInfoMessage("用法不对，输入 /dn help 查看帮助");
+                return;
+            }
+
+            void ShowHelpText()
+            {
+                op.SendInfoMessage("/dn clear，清理放置物");
+                op.SendInfoMessage("/dn wof，召唤血肉墙");
+                op.SendInfoMessage("/dn altar，模拟打破祭坛");
+                op.SendInfoMessage("/dn reload，重载配置");
+            }
+
+            switch (args.Parameters[0].ToLowerInvariant())
+            {
+                case "help": ShowHelpText(); return;
+                default: op.SendInfoMessage("用法不对，输入 /dn help 查看帮助"); return;
+
+                case "clear":
+                    TileHelper.AsyncClearTile(op, _config.tiles);
+                    break;
+
+
+                case "wof":
+                    int curTime = GetUnixTimestamp;
+                    if (curTime - WOFLastTime > 60)
+                    {
+                        if (Main.wofNPCIndex != -1)
+                        {
+                            op.SendErrorMessage("血肉墙已存在!");
+                            return;
+                        }
+                        if (args.Player.Y / 16f < Main.maxTilesY - 205)
+                        {
+                            op.SendErrorMessage("血肉墙只能在地狱进行召唤!");
+                            return;
+                        }
+                        if (!op.RealPlayer)
+                        {
+                            op.SendErrorMessage("需要在游戏内操作!");
+                            return;
+                        }
+
+                        // 检查和减扣 向导巫毒娃娃
+                        int index = -1;
+                        for (int i = 0; i < 54; i++)
+                        {
+                            Item item = op.TPlayer.inventory[i];
+                            if (item.active && item.netID == 267)
+                            {
+                                index = i;
+                                item.netID = 0;
+                                item.active = false;
+                                break;
+                            }
+                        }
+                        if (index == -1)
+                        {
+                            op.SendErrorMessage("你的背包里没有[i:267]向导巫毒娃娃!");
+                            return;
+                        }
+                        utils.updatePlayerSlot(op, op.TPlayer.inventory[index], index);
+
+                        // 召唤血肉墙
+                        NPC.SpawnWOF(new Vector2(op.X, op.Y));
+                        WOFLastTime = curTime;
+                        TSPlayer.All.SendInfoMessage($"{op.Name} 召唤了血肉墙!");
+                    }
+                    else
+                    {
+                        op.SendErrorMessage($"操作太快了，请稍等1分钟!");
+                    }
+                    break;
+
+
+                // 打破祭坛
+                case "altar":
+                    if (!Main.hardMode)
+                    {
+                        op.SendErrorMessage("需要先击败血肉墙！");
+                        return;
+                    }
+                    if (WorldGen.altarCount >= 9)
+                    {
+                        op.SendInfoMessage($"已打破{WorldGen.altarCount}个祭坛，超过9个就不能使用本指令了!");
+                        return;
+                    }
+                    WorldGen.SmashAltar(op.TileX, op.TileY);
+                    op.SendSuccessMessage($"已打破{WorldGen.altarCount}个祭坛");
+                    break;
+
+
+                case "reload":
+                    Reload();
+                    op.SendSuccessMessage("[禁npc]已重载双禁配置");
+                    break;
+            }
         }
 
         private void Reload()
         {
-            _config = Config.Load(saveFilename);
-            total = _config.second * 60;
+            _config = Config.Load(saveFile);
+        }
 
-            // ItemID.Sets.Deprecated = Deprecated;
-            foreach (var id in _config.item)
+        // 检查NPC
+        private void OnNpcSpawn(NpcSpawnEventArgs args)
+        {
+            NPC npc = Main.npc[args.NpcId];
+            if (_config.npcList.Contains(npc.netID))
             {
-                ItemID.Sets.Deprecated[id] = true;
+                string name = npc.FullName;
+                npc.active = false;
+                npc.type = 0;
+                TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", args.NpcId);
+                args.Handled = true;
+                muteMsgs.Add(Language.GetTextValue("Announcement.HasArrived", name));
             }
         }
 
-        private void OnUpdate(EventArgs args)
+        // 屏蔽NPC到达通知
+        private void OnBroadcast(ServerBroadcastEventArgs args)
         {
-            if( count>0 )
+            if (args.Handled) return;
+            string msg = args.Message.ToString();
+            if (muteMsgs.Contains(msg))
             {
-                count--;
-                return;
+                utils.Log(msg + "（在游戏里看不到这条消息）");
+                muteMsgs.Remove(msg);
+                args.Handled = true;
             }
+        }
 
-            count = total;
 
-            for (int i = 0; i < Main.maxNPCs; i++)
+        // 第一个玩家进入世界
+        private void OnServerJoin(JoinEventArgs args)
+        {
+            //TSPlayer op = TShock.Players[args.Who];
+
+            // 第一个玩家进入世界时 执行检查
+            if (!hasPlayer)
             {
-                if( !Main.npc[i].active || Main.npc[i].type==0 || Main.npc[i].netID==0 )
-                    continue;
+                TxtHelper.Load();
 
-                if( _config.npc.Contains(Main.npc[i].netID) )
+                hasPlayer = true;
+
+                // 清理NPC
+                for (int i = 0; i < Main.maxNPCs; i++)
                 {
-                    Main.npc[i].active = false;
-                    Main.npc[i].type = 0;
-                    TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", i);
+                    if (Main.npc[i].active && _config.npcList.Contains(Main.npc[i].netID))
+                    {
+                        Main.npc[i].active = false;
+                        Main.npc[i].type = 0;
+                        TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", i);
+                    }
+                }
+                // 清理放置物
+                TileHelper.AsyncClearTile(null, _config.tiles);
+            }
+        }
+
+        // 检查玩家背包
+        private void OnPlayerSlot(object sender, GetDataHandlers.PlayerSlotEventArgs args)
+        {
+            TSPlayer op = args.Player;
+            short id = args.Type;
+            short slot = args.Slot;
+
+            if (_config.playerSlotCheck && _config.itemList.Contains(id))
+            {
+                Item item;
+                if (slot < 54)
+                    item = op.TPlayer.inventory[slot];
+                else if (slot >= 99 && slot < 139)
+                    item = op.TPlayer.bank.item[slot - 99];
+                else if (slot >= 139 && slot < 179)
+                    item = op.TPlayer.bank2.item[slot - 139];
+                else if (slot >= 180 && slot < 220)
+                    item = op.TPlayer.bank3.item[slot - 180];
+                else if (slot >= 220 && slot < 260)
+                    item = op.TPlayer.bank4.item[slot - 220];
+                else
+                    return;
+
+                if (item != null)
+                {
+                    //string name = item.Name;
+                    item.active = false;
+                    item.netID = 0;
+                    utils.updatePlayerSlot(op, item, slot);
+                    //utils.Log($"[禁npc][i/s{args.Stack}:{id}]{name} 已被清除");
                 }
             }
         }
 
+
+        // 检查放置物
+        private void OnPlaceObject(object sender, GetDataHandlers.PlaceObjectEventArgs args)
+        {
+            short x = args.X;
+            short y = args.Y;
+            short type = args.Type;
+            short style = args.Style;
+
+            foreach (TileLiteData td in _config.tiles.Where(td => td.id == type))
+            {
+                if (td.style == -1 || td.style == style)
+                {
+                    args.Handled = true;
+                    FindData fd = TxtHelper.GetFindData(td);
+                    TSPlayer.All.SendTileSquare(args.X, args.Y, Math.Max(fd.w, fd.h));
+                    //args.Player.SendErrorMessage("[禁npc]此物品不允许放置");
+                }
+            }
+        }
+
+        private void OnItemDrop(object sender, GetDataHandlers.ItemDropEventArgs args)
+        {
+            short id = args.ID;
+            short type = args.Type;
+            short stack = args.Stacks;
+
+            // 玩家扔出物品
+            if (id == 400)
+            {
+                if (_config.itemList.Contains(type))
+                {
+                    utils.Log($"[禁npc][i/s{stack}:{type}] 已被清除");
+                    args.Handled = true;
+                    return;
+                }
+            }
+
+            // 检查所有掉落物
+            for (int i = 0; i < 400; i++)
+            {
+                Item item = Main.item[i];
+                if (item.active && _config.itemList.Contains(item.netID))
+                {
+                    utils.Log($"[禁npc][i/s{item.stack}:{item.netID}] 已被清除");
+                    item.active = false;
+                    NetMessage.TrySendData(21, -1, -1, null, i);
+                }
+            }
+        }
+        private int GetUnixTimestamp { get { return (int)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds; } }
+
         protected override void Dispose(bool disposing)
-		{
-			if (disposing)
-			{
-                ServerApi.Hooks.GameUpdate.Deregister(this, OnUpdate);
-                GeneralHooks.ReloadEvent -= OnReload;
-			}
-			base.Dispose(disposing);
-		}
-	}
+        {
+            if (disposing)
+            {
+                ServerApi.Hooks.NpcSpawn.Deregister(this, OnNpcSpawn);
+                ServerApi.Hooks.ServerJoin.Deregister(this, OnServerJoin);
+                ServerApi.Hooks.ServerBroadcast.Deregister(this, OnBroadcast);
+
+                GetDataHandlers.PlayerSlot.UnRegister(OnPlayerSlot);
+                GetDataHandlers.PlaceObject.UnRegister(OnPlaceObject);
+            }
+            base.Dispose(disposing);
+        }
+    }
 
 }
