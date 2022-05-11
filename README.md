@@ -14,7 +14,7 @@
 <br>
 
 ### 1.0版
-~~ 1.0版的配置文件位于 `./tshock/DisableNPC.json` ~~
+1.0版的配置文件位于 `./tshock/DisableNPC.json`
 
 [1.0版下载地址](https://gitee.com/hufang360/TShockDisableNPC/attach_files/1049368/download/DisableNPC.dll) 
 
