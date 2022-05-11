@@ -8,7 +8,7 @@
 
 2.0版的配置文件位于 `./tshock/DisableNPC/config.json`
 
-[禁止清单](https://gitee.com/hufang360/TShockDisableNPC/wikis/v2.0%20%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E）
+[禁止清单](https://gitee.com/hufang360/TShockDisableNPC/wikis/v2.0%20%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E)
 
 可用指令：
 ```
@@ -30,6 +30,6 @@
 
 [1.0版下载地址](https://gitee.com/hufang360/TShockDisableNPC/attach_files/1049368/download/DisableNPC.dll) 
 
-[v1.0 使用说明](https://gitee.com/hufang360/TShockDisableNPC/wikis/v1.0%20%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E）
+[v1.0 使用说明](https://gitee.com/hufang360/TShockDisableNPC/wikis/v1.0%20%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E)
 
 
