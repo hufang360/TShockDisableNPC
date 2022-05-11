@@ -3,6 +3,7 @@
 
 ### 2.0版
 [下载地址](https://gitee.com/hufang360/TShockDisableNPC/release)
+
 如果对应位置没有配置文件，插件会自动创建。
 
 2.0版的配置文件位于 `./tshock/DisableNPC/config.json`
