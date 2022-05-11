@@ -2,7 +2,7 @@
 
 
 ### 2.0版
-[下载地址](https://gitee.com/hufang360/TShockDisableNPC/release)
+[下载地址](https://gitee.com/hufang360/TShockDisableNPC/attach_files/1057411/download/DisableNPC-v2.0.dll)
 
 如果对应位置没有配置文件，插件会自动创建。
 
