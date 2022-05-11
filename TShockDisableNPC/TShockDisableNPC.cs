@@ -29,7 +29,7 @@ namespace DisableNPC
         private bool hasPlayer = false;
         private List<string> muteMsgs = new List<string>();
 
-        private int WOFLastTime = 0;
+        private int LastTime = 0;
 
 
         public DisableNPC(Main game) : base(game)
@@ -65,10 +65,12 @@ namespace DisableNPC
             {
                 op.SendInfoMessage("/dn clear，清理放置物");
                 op.SendInfoMessage("/dn wof，召唤血肉墙");
+                op.SendInfoMessage("/dn ske，召唤骷髅王");
                 op.SendInfoMessage("/dn altar，模拟打破祭坛");
                 op.SendInfoMessage("/dn reload，重载配置");
             }
 
+            int curTime = GetUnixTimestamp;
             switch (args.Parameters[0].ToLowerInvariant())
             {
                 case "help": ShowHelpText(); return;
@@ -78,10 +80,52 @@ namespace DisableNPC
                     TileHelper.AsyncClearTile(op, _config.tiles);
                     break;
 
+                case "ske":
+                    if (curTime - LastTime > 180)
+                    {
+                        if (!op.RealPlayer)
+                        {
+                            op.SendErrorMessage("需要在游戏内操作!");
+                            return;
+                        }
+                        if (Main.dayTime)
+                        {
+                            op.SendErrorMessage("只能在夜晚召唤!");
+                            return;
+                        }
+                        foreach(NPC npc in Main.npc)
+                        {
+                            if (npc.active && npc.netID == 37)
+                            {
+                                op.SendErrorMessage("骷髅王已存在!");
+                                return;
+                            }
+                        }
+
+                        Rectangle area = new Rectangle(op.TileX - 61, op.TileY - 34 + 3, 122, 68);
+                        if(InArea(area, Main.dungeonX, Main.dungeonY))
+                        {
+                            NPC npc = new NPC();
+                            npc.SetDefaults(35);
+                            TSPlayer.Server.SpawnNPC(npc.type, npc.FullName, 1, args.Player.TileX, args.Player.TileY);
+                            LastTime = curTime;
+                            TSPlayer.All.SendInfoMessage($"{op.Name} 召唤了骷髅王!");
+                        }
+                        else
+                        {
+                            op.SendErrorMessage("需要在地牢附近!");
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        op.SendErrorMessage($"操作太快了，请3分钟后再操作!");
+                    }
+                    break;
+
 
                 case "wof":
-                    int curTime = GetUnixTimestamp;
-                    if (curTime - WOFLastTime > 60)
+                    if (curTime - LastTime > 180)
                     {
                         if (Main.wofNPCIndex != -1)
                         {
@@ -121,12 +165,12 @@ namespace DisableNPC
 
                         // 召唤血肉墙
                         NPC.SpawnWOF(new Vector2(op.X, op.Y));
-                        WOFLastTime = curTime;
+                        LastTime = curTime;
                         TSPlayer.All.SendInfoMessage($"{op.Name} 召唤了血肉墙!");
                     }
                     else
                     {
-                        op.SendErrorMessage($"操作太快了，请稍等1分钟!");
+                        op.SendErrorMessage($"操作太快了，请3分钟后再操作!");
                     }
                     break;
 
@@ -301,6 +345,7 @@ namespace DisableNPC
             }
         }
         private int GetUnixTimestamp { get { return (int)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds; } }
+        private bool InArea(Rectangle rect, int x, int y) { return x >= rect.X && x <= rect.X + rect.Width && y >= rect.Y && y <= rect.Y + rect.Height; }
 
         protected override void Dispose(bool disposing)
         {
