@@ -31,6 +31,7 @@ namespace DisableNPC
 
         private int LastTime = 0;
 
+        private string Permission = "disablenpc";
 
         public DisableNPC(Main game) : base(game)
         {
@@ -39,7 +40,7 @@ namespace DisableNPC
 
         public override void Initialize()
         {
-            Commands.ChatCommands.Add(new Command(new List<string>() { "disablenpc" }, DNCommand, "disablenpc", "dn") { HelpText = "禁NPC" });
+            Commands.ChatCommands.Add(new Command(DNCommand, "disablenpc", "dn") { HelpText = "禁NPC" });
 
             if (!Directory.Exists(saveDir)) Directory.CreateDirectory(saveDir);
 
@@ -63,11 +64,14 @@ namespace DisableNPC
 
             void ShowHelpText()
             {
-                op.SendInfoMessage("/dn clear，清理放置物");
                 op.SendInfoMessage("/dn wof，召唤血肉墙");
                 op.SendInfoMessage("/dn ske，召唤骷髅王");
                 op.SendInfoMessage("/dn altar，模拟打破祭坛");
-                op.SendInfoMessage("/dn reload，重载配置");
+                if (op.HasPermission(Permission))
+                {
+                    op.SendInfoMessage("/dn clear，清理放置物");
+                    op.SendInfoMessage("/dn reload，重载配置");
+                }
             }
 
             int curTime = GetUnixTimestamp;
@@ -75,10 +79,6 @@ namespace DisableNPC
             {
                 case "help": ShowHelpText(); return;
                 default: op.SendInfoMessage("用法不对，输入 /dn help 查看帮助"); return;
-
-                case "clear":
-                    TileHelper.AsyncClearTile(op, _config.tiles);
-                    break;
 
                 case "ske":
                     if (curTime - LastTime > 180)
@@ -88,12 +88,7 @@ namespace DisableNPC
                             op.SendErrorMessage("需要在游戏内操作!");
                             return;
                         }
-                        if (Main.dayTime)
-                        {
-                            op.SendErrorMessage("只能在夜晚召唤!");
-                            return;
-                        }
-                        foreach(NPC npc in Main.npc)
+                        foreach (NPC npc in Main.npc)
                         {
                             if (npc.active && npc.netID == 37)
                             {
@@ -101,9 +96,19 @@ namespace DisableNPC
                                 return;
                             }
                         }
+                        if (NPC.downedBoss3)
+                        {
+                            op.SendErrorMessage("骷髅王已被击败，无法再次召唤!");
+                            return;
+                        }
+                        if (Main.dayTime)
+                        {
+                            op.SendErrorMessage("只能在夜晚召唤!");
+                            return;
+                        }
 
                         Rectangle area = new Rectangle(op.TileX - 61, op.TileY - 34 + 3, 122, 68);
-                        if(InArea(area, Main.dungeonX, Main.dungeonY))
+                        if (InArea(area, Main.dungeonX, Main.dungeonY))
                         {
                             NPC npc = new NPC();
                             npc.SetDefaults(35);
@@ -113,7 +118,7 @@ namespace DisableNPC
                         }
                         else
                         {
-                            op.SendErrorMessage("需要在地牢附近!");
+                            op.SendErrorMessage("需要在地牢入口附近!");
                             return;
                         }
                     }
@@ -192,9 +197,23 @@ namespace DisableNPC
                     break;
 
 
+                case "clear":
+                    if (!op.HasPermission(Permission))
+                    {
+                        op.SendErrorMessage("你没有权限执行清理操作");
+                        return;
+                    }
+                    TileHelper.AsyncClearTile(op, _config.tiles);
+                    break;
+
                 case "reload":
+                    if (!op.HasPermission(Permission))
+                    {
+                        op.SendErrorMessage("你没有权限执行重载操作");
+                        return;
+                    }
                     Reload();
-                    op.SendSuccessMessage("[禁npc]已重载双禁配置");
+                    op.SendSuccessMessage("[禁npc]已重新加载配置");
                     break;
             }
         }

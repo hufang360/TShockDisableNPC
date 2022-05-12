@@ -2,7 +2,7 @@
 
 
 ### 2.0版
-[下载地址](https://gitee.com/hufang360/TShockDisableNPC/attach_files/1057853/download/DisableNPC-v2.0.dll)
+[下载地址](https://gitee.com/hufang360/TShockDisableNPC/attach_files/1059096/download/DisableNPC-v2.0.dll)
 
 如果对应位置没有配置文件，插件会自动创建。
 
@@ -12,14 +12,16 @@
 
 可用指令：
 ```
-/dn clear，清理放置物
 /dn wof，召唤 血肉墙
 /dn ske，召唤 骷髅王
 /dn altar，模拟打破祭坛
-/dn reload，重载配置
+
+
+/dn clear，清理地图上的制作站
+/dn reload，重新加载配置文件
 ```
 
-使用指令需要`disablenpc`权限。
+`/dn clear` 和 `/dn reload` 指令是给服主用的，如果想分配给其它用户组，需要授权`disablenpc`权限。
 
 
 
