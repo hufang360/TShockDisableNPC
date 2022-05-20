@@ -8,13 +8,13 @@
 
 2.0版的配置文件位于 `./tshock/DisableNPC/config.json`
 
-[配置清单](https://gitee.com/hufang360/TShockDisableNPC/wikis/v2.0%20%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E)
+[配置清单](https://www.yuque.com/hufang/bv/tshock-disable-npc#mzezc)
 
 可用指令：
 ```
-/dn wof，召唤 血肉墙
-/dn ske，召唤 骷髅王
-/dn altar，模拟打破祭坛
+/dn wof，召唤 xuerou墙
+/dn ske，召唤 kulou王
+/dn altar，模拟打破jitan
 
 
 /dn clear，清理地图上的制作站
@@ -32,6 +32,6 @@
 
 [1.0版下载地址](https://gitee.com/hufang360/TShockDisableNPC/attach_files/1049368/download/DisableNPC.dll) 
 
-[v1.0 使用说明](https://gitee.com/hufang360/TShockDisableNPC/wikis/v1.0%20%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E)
+[v1.0 使用说明-https://www.yuque.com/hufang/bv/tshock-disable-npc#d2HtY](https://www.yuque.com/hufang/bv/tshock-disable-npc#d2HtY)
 
 
