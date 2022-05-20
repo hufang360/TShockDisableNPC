@@ -8,7 +8,7 @@
 
 2.0版的配置文件位于 `./tshock/DisableNPC/config.json`
 
-[配置清单](https://www.yuque.com/hufang/bv/tshock-disable-npc#mzezc)
+[配置清单-https://www.yuque.com/hufang/bv/tshock-disable-npc#mzezc](https://www.yuque.com/hufang/bv/tshock-disable-npc#mzezc)
 
 可用指令：
 ```
