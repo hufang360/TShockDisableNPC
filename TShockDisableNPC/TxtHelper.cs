@@ -7,7 +7,7 @@ namespace DisableNPC
     #region XMLHelper
     public class TxtHelper
     {
-        private static List<TileProperty> tiles = new List<TileProperty>();
+        private static List<TileProperty> tiles = new();
         private static bool isLoad = false;
 
         public static void Load()
@@ -22,7 +22,7 @@ namespace DisableNPC
                 var arrSize = arr[1].Split(',');
                 var arrFrame = arr[2].Split(':');
 
-                TileProperty tile = new TileProperty
+                TileProperty tile = new()
                 {
                     id = int.Parse(arr[0])
                 };
@@ -91,7 +91,7 @@ namespace DisableNPC
 
         public static FindData GetFindData(TileLiteData p)
         {
-            FindData fd = new FindData(p.id, p.style);
+            FindData fd = new(p.id, p.style);
             fd.style = p.style;
 
             TileProperty tprop = GetTileProp(p.id);
@@ -123,7 +123,7 @@ namespace DisableNPC
         public int id = 0;
         public int w = 1;
         public int h = 1;
-        public List<Point16> frames = new List<Point16>();
+        public List<Point16> frames = new();
     }
     #endregion
 
@@ -137,14 +137,14 @@ namespace DisableNPC
         public int w = 1;
         public int h = 1;
         public int style = -1;
-        public int frameX = 0;
-        public int frameY = 0;
+        public int frameX = -1;
+        public int frameY = -1;
 
         public FindData()
         {
         }
 
-        public FindData(int _id, int _style = 0, int _w = 1, int _h = 1, int _frameX = 0, int _frameY = 0)
+        public FindData(int _id, int _style = 0, int _w = 1, int _h = 1, int _frameX = -1, int _frameY = -1)
         {
             id = _id;
             w = _w;

@@ -9,6 +9,7 @@ using Terraria.Localization;
 using TerrariaApi.Server;
 using TShockAPI;
 
+
 namespace DisableNPC
 {
     [ApiVersion(2, 1)]
@@ -27,7 +28,7 @@ namespace DisableNPC
         private static string saveFile = Path.Combine(saveDir, "config.json");
 
         private bool hasPlayer = false;
-        private List<string> muteMsgs = new List<string>();
+        private List<string> muteMsgs = new();
 
         private int LastTime = 0;
 
@@ -80,6 +81,7 @@ namespace DisableNPC
                 case "help": ShowHelpText(); return;
                 default: op.SendInfoMessage("用法不对，输入 /dn help 查看帮助"); return;
 
+                // 召唤骷髅王
                 case "ske":
                     if (curTime - LastTime > 180)
                     {
@@ -107,10 +109,10 @@ namespace DisableNPC
                             return;
                         }
 
-                        Rectangle area = new Rectangle(op.TileX - 61, op.TileY - 34 + 3, 122, 68);
+                        Rectangle area = new(op.TileX - 61, op.TileY - 34 + 3, 122, 68);
                         if (InArea(area, Main.dungeonX, Main.dungeonY))
                         {
-                            NPC npc = new NPC();
+                            NPC npc = new();
                             npc.SetDefaults(35);
                             TSPlayer.Server.SpawnNPC(npc.type, npc.FullName, 1, args.Player.TileX, args.Player.TileY);
                             LastTime = curTime;
@@ -124,11 +126,12 @@ namespace DisableNPC
                     }
                     else
                     {
-                        op.SendErrorMessage($"操作太快了，请3分钟后再操作!");
+                        op.SendErrorMessage("操作太快了，请3分钟后再操作!");
                     }
                     break;
 
 
+                // 召唤血肉墙
                 case "wof":
                     if (curTime - LastTime > 180)
                     {
@@ -175,7 +178,7 @@ namespace DisableNPC
                     }
                     else
                     {
-                        op.SendErrorMessage($"操作太快了，请3分钟后再操作!");
+                        op.SendErrorMessage("操作太快了，请3分钟后再操作!");
                     }
                     break;
 
@@ -203,7 +206,7 @@ namespace DisableNPC
                         op.SendErrorMessage("你没有权限执行清理操作");
                         return;
                     }
-                    TileHelper.AsyncClearTile(op, _config.tiles);
+                    TileHelper.AsyncClear(op, _config.tiles, _config.itemList);
                     break;
 
                 case "reload":
@@ -245,7 +248,7 @@ namespace DisableNPC
             string msg = args.Message.ToString();
             if (muteMsgs.Contains(msg))
             {
-                utils.Log(msg + "（在游戏里看不到这条消息）");
+                //utils.Log(msg + "（在游戏里看不到这条消息）");
                 muteMsgs.Remove(msg);
                 args.Handled = true;
             }
@@ -275,7 +278,7 @@ namespace DisableNPC
                     }
                 }
                 // 清理放置物
-                TileHelper.AsyncClearTile(null, _config.tiles);
+                TileHelper.AsyncClear(null, _config.tiles, _config.itemList);
             }
         }
 
@@ -286,7 +289,7 @@ namespace DisableNPC
             short id = args.Type;
             short slot = args.Slot;
 
-            if (_config.playerSlotCheck && _config.itemList.Contains(id))
+            if (_config.itemList.Contains(id))
             {
                 Item item;
                 if (slot < 54)
@@ -308,7 +311,6 @@ namespace DisableNPC
                     item.active = false;
                     item.netID = 0;
                     utils.updatePlayerSlot(op, item, slot);
-                    //utils.Log($"[禁npc][i/s{args.Stack}:{id}]{name} 已被清除");
                 }
             }
         }
@@ -328,12 +330,14 @@ namespace DisableNPC
                 {
                     args.Handled = true;
                     FindData fd = TxtHelper.GetFindData(td);
-                    TSPlayer.All.SendTileSquare(args.X, args.Y, Math.Max(fd.w, fd.h));
+                    TSPlayer.All.SendTileSquareCentered(args.X, args.Y, (byte)Math.Max(fd.w, fd.h));
+                    // 已过时 TSPlayer.All.SendTileSquare(args.X, args.Y, Math.Max(fd.w, fd.h));
                     //args.Player.SendErrorMessage("[禁npc]此物品不允许放置");
                 }
             }
         }
 
+        // 扔出物品
         private void OnItemDrop(object sender, GetDataHandlers.ItemDropEventArgs args)
         {
             short id = args.ID;
@@ -345,7 +349,7 @@ namespace DisableNPC
             {
                 if (_config.itemList.Contains(type))
                 {
-                    utils.Log($"[禁npc][i/s{stack}:{type}] 已被清除");
+                    utils.Log($"已清除 {TShock.Utils.GetItemById(type).Name} x{stack}");
                     args.Handled = true;
                     return;
                 }
@@ -357,7 +361,7 @@ namespace DisableNPC
                 Item item = Main.item[i];
                 if (item.active && _config.itemList.Contains(item.netID))
                 {
-                    utils.Log($"[禁npc][i/s{item.stack}:{item.netID}] 已被清除");
+                    utils.Log($"已清除 {TShock.Utils.GetItemById(item.netID).Name} x{item.stack}");
                     item.active = false;
                     NetMessage.TrySendData(21, -1, -1, null, i);
                 }
@@ -376,9 +380,11 @@ namespace DisableNPC
 
                 GetDataHandlers.PlayerSlot.UnRegister(OnPlayerSlot);
                 GetDataHandlers.PlaceObject.UnRegister(OnPlaceObject);
+                GetDataHandlers.ItemDrop.UnRegister(OnItemDrop);
             }
             base.Dispose(disposing);
         }
+
     }
 
 }

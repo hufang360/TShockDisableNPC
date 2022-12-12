@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
-using OTAPI.Tile;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Terraria;
 using TShockAPI;
@@ -13,7 +13,7 @@ namespace DisableNPC
         public static bool isTaskRunning = false;
         public static int clearCount = 0;
 
-        public static async void AsyncClearTile(TSPlayer op, List<TileLiteData> targets)
+        public static async void AsyncClear(TSPlayer op, List<TileLiteData> targets, List<int> ids)
         {
             if (isTaskRunning)
             {
@@ -23,14 +23,12 @@ namespace DisableNPC
             int startTime = utils.GetUnixTimestamp;
             await Task.Run(() =>
             {
-                ClearTile(op, targets);
+                ClearTile(targets, ids);
             }).ContinueWith((d) =>
             {
-                if (clearCount > 0)
-                {
-                    FinishGen(op != null);
-                    InformPlayers();
-                }
+                FinishGen(op != null);
+                InformPlayers();
+
                 int seconds = utils.GetUnixTimestamp - startTime;
                 if (op == null)
                     utils.Log($"已清除 {clearCount} 个目标，耗时 {seconds}s ！");
@@ -40,7 +38,7 @@ namespace DisableNPC
         }
 
 
-        private static void ClearTile(TSPlayer op, List<TileLiteData> targets)
+        private static void ClearTile(List<TileLiteData> targets, List<int> ids)
         {
             ResetSkip();
             isTaskRunning = true;
@@ -66,6 +64,25 @@ namespace DisableNPC
                     }
                 }
             }
+
+            foreach (Chest ch in Main.chest.Where(ch => ch != null))
+            {
+                for (int k = 0; k < 40; k++)
+                {
+                    Item item = ch.item[k];
+                    if (item == null) continue;
+                    if (!item.active) continue;
+                    if (ids.Contains(item.netID))
+                    {
+                        ch.item[k].active = false;
+                        ch.item[k].netID = 0;
+                        NetMessage.SendData(31, -1, -1, null, ch.x, ch.y);
+                        count++;
+                    }
+                }
+            }
+
+            isTaskRunning = false;
             clearCount = count;
         }
 
@@ -86,7 +103,6 @@ namespace DisableNPC
 
         public static void FinishGen(bool needSound = true)
         {
-            isTaskRunning = false;
             if (needSound)
             {
                 foreach (TSPlayer player in TShock.Players)
@@ -163,7 +179,7 @@ namespace DisableNPC
             }
             return false;
         }
-        private static List<Rectangle> skip = new List<Rectangle>();
+        private static List<Rectangle> skip = new();
         private static void ResetSkip() { skip.Clear(); }
         private static bool ContainsSkip(int x, int y)
         {

@@ -7,21 +7,15 @@ namespace DisableNPC
 {
     public class Config
     {
-        public List<LiteData> npc = new List<LiteData>();
-        public List<LiteData> item = new List<LiteData>();
+        public List<LiteData> npc = new();
+        public List<LiteData> item = new();
 
-        public List<TileLiteData> tiles = new List<TileLiteData>();
-
-        // 玩家背包检测
-        public bool playerSlotCheck = true;
-
-        // 定时检查
-        public int second = 2;
+        public List<TileLiteData> tiles = new();
 
         [JsonIgnore]
-        public List<int> npcList = new List<int>();
+        public List<int> npcList = new();
         [JsonIgnore]
-        public List<int> itemList = new List<int>();
+        public List<int> itemList = new();
 
 
         public static Config Load(string path)
