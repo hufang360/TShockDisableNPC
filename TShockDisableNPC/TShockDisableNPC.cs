@@ -51,6 +51,7 @@ namespace DisableNPC
             ServerApi.Hooks.ServerJoin.Register(this, OnServerJoin, 5);
             GetDataHandlers.PlayerSlot.Register(OnPlayerSlot, HandlerPriority.Highest);
             GetDataHandlers.PlaceObject.Register(OnPlaceObject, HandlerPriority.Highest);
+            GetDataHandlers.PlayerUpdate.Register(OnPlayerUpdate, HandlerPriority.Highest);
             GetDataHandlers.ItemDrop.Register(OnItemDrop);
         }
 
@@ -314,7 +315,7 @@ namespace DisableNPC
 
             // 检查手持物品
             item = op.TPlayer.inventory[58];
-            if (item != null)
+            if (item != null && _config.itemList.Contains(item.netID))
             {
                 item.active = false;
                 item.netID = 0;
@@ -322,6 +323,19 @@ namespace DisableNPC
             }
         }
 
+        // 检查手持物品
+        private void OnPlayerUpdate(object sender, GetDataHandlers.PlayerUpdateEventArgs args)
+        {
+            TSPlayer op = args.Player;
+            // 检查手持物品
+            Item item = op.TPlayer.inventory[58];
+            if (item != null && _config.itemList.Contains(item.netID))
+            {
+                item.active = false;
+                item.netID = 0;
+                utils.updatePlayerSlot(op, item, 58);
+            }
+        }
 
         // 检查放置物
         private void OnPlaceObject(object sender, GetDataHandlers.PlaceObjectEventArgs args)
@@ -386,6 +400,7 @@ namespace DisableNPC
                 ServerApi.Hooks.ServerBroadcast.Deregister(this, OnBroadcast);
 
                 GetDataHandlers.PlayerSlot.UnRegister(OnPlayerSlot);
+                GetDataHandlers.PlayerUpdate.UnRegister(OnPlayerUpdate);
                 GetDataHandlers.PlaceObject.UnRegister(OnPlaceObject);
                 GetDataHandlers.ItemDrop.UnRegister(OnItemDrop);
             }
