@@ -248,12 +248,10 @@ namespace DisableNPC
             string msg = args.Message.ToString();
             if (muteMsgs.Contains(msg))
             {
-                //utils.Log(msg + "（在游戏里看不到这条消息）");
                 muteMsgs.Remove(msg);
                 args.Handled = true;
             }
         }
-
 
         // 第一个玩家进入世界
         private void OnServerJoin(JoinEventArgs args)
@@ -289,9 +287,9 @@ namespace DisableNPC
             short id = args.Type;
             short slot = args.Slot;
 
+            Item item;
             if (_config.itemList.Contains(id))
             {
-                Item item;
                 if (slot < 54)
                     item = op.TPlayer.inventory[slot];
                 else if (slot >= 99 && slot < 139)
@@ -312,6 +310,15 @@ namespace DisableNPC
                     item.netID = 0;
                     utils.updatePlayerSlot(op, item, slot);
                 }
+            }
+
+            // 检查手持物品
+            item = op.TPlayer.inventory[58];
+            if (item != null)
+            {
+                item.active = false;
+                item.netID = 0;
+                utils.updatePlayerSlot(op, item, 58);
             }
         }
 
