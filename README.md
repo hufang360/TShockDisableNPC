@@ -2,7 +2,7 @@
 
 
 ### 2.0版
-[下载地址](https://gitee.com/hufang360/TShockDisableNPC/attach_files/1059096/download/DisableNPC-v2.0.dll)
+[DisableNPC-v2.2.dll](https://github.com/hufang360/TShockDisableNPC/releases/download/v2.2/DisableNPC-v2.2.dll)
 
 如果对应位置没有配置文件，插件会自动创建。
 
@@ -30,7 +30,7 @@
 ### 1.0版
 1.0版的配置文件位于 `./tshock/DisableNPC.json`
 
-[1.0版下载地址](https://gitee.com/hufang360/TShockDisableNPC/attach_files/1049368/download/DisableNPC.dll) 
+[1.0版下载地址](https://github.com/hufang360/TShockDisableNPC/releases/download/v1.0/DisableNPC.dll) 
 
 [v1.0 使用说明-https://www.yuque.com/hufang/bv/tshock-disable-npc#d2HtY](https://www.yuque.com/hufang/bv/tshock-disable-npc#d2HtY)
 
